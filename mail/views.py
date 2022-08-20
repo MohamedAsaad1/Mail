@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 from .models import User, Email
 
@@ -39,11 +40,13 @@ def compose(request):
 
     # Convert email addresses to usersz
     recipients = []
+    
     for email in emails:
         try:
             user = User.objects.get(email=email)
             recipients.append(user)
         except User.DoesNotExist:
+
             return JsonResponse({
                 "error": f"User with email {email} does not exist."
             }, status=400)
@@ -51,10 +54,16 @@ def compose(request):
     # Get contents of email
     subject = data.get("subject", "")
     body = data.get("body", "")
+    if request.user in recipients:
+            return JsonResponse({
+                "error": f"Can't Send To Yourself"
+            }, status=400)
+        
+
 
     # Create one email for each recipient, plus sender
     users = set()
-    users.add(request.user)
+    users.add(request.user) 
     users.update(recipients)
     for user in users:
         email = Email(
@@ -68,7 +77,6 @@ def compose(request):
         for recipient in recipients:
             email.recipients.add(recipient)
         email.save()
-
     return JsonResponse({"message": "Email sent successfully."}, status=201)
 
 
