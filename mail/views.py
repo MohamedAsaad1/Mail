@@ -1,4 +1,6 @@
 import json
+
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -6,9 +8,8 @@ from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 
-from .models import User, Email
+from .models import Email, User
 
 
 def index(request):
@@ -21,7 +22,19 @@ def index(request):
     else:
         return HttpResponseRedirect(reverse("login"))
 
+# def query_user(request,email):
+#     try:
+#      user_id =User.objects.get(username=email)
+#      if request.method == 'GET':
+#         return  JsonResponse({"user_id":f"{user_id.id}","user_email":f"{user_id}"})
+#     except:
+#         return JsonResponse({"error": "POST request required."}, status=400)
 
+    
+def query(request):
+    current_user = request.user
+    return JsonResponse({"user":f"{current_user}","user_id":f"{current_user.id}"
+    })
 @csrf_exempt
 @login_required
 def compose(request):

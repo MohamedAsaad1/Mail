@@ -12,4 +12,6 @@ urlpatterns = [
     path("emails", views.compose, name="compose"),
     path("emails/<int:email_id>", views.email, name="email"),
     path("emails/<str:mailbox>", views.mailbox, name="mailbox"),
+    # path("user/<str:email>", views.query_user, name="queryuser"),
+    path("user/", views.query, name="queryuser"),
 ]

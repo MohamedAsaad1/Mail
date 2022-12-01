@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#compose-form').addEventListener('submit',event => {
       event.preventDefault()
 
-      fetch('/emails' , {
+      fetch('/emails', {
       method: 'POST',
       body: JSON.stringify({
         recipients: document.querySelector('#compose-recipients').value,
@@ -62,12 +62,16 @@ function load_mailbox(mailbox) {
       <th scope="col"><b>${element.sender}</b> </th>
       <th scope="col"><b>${element.subject}</b> </th>
       <th scope="col"><b>${element.timestamp}</b> </th>
+     
       </tr>
       </table>
       `;
-      div.addEventListener('click',() => load_element(element.id));
       view.appendChild(div);
-  
+      div.addEventListener('click',() => load_element(element.id));
+
+ 
+
+      
 
       
     });
@@ -91,16 +95,33 @@ function load_element(email){
     <div><strong>Timestamp:</strong> <span>${email.timestamp}</span><div>
     <div><strong>Body:</strong> <span>${email.body}</span><div>
     <button class="btn btn-sm btn-outline-primary mt-2" id="reply" >Reply</button>
+    <th scope="col"><b  ><img  id="done" name='archived'src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Grey_archive_icon_%28Wikiproject_icons%29.svg/400px-Grey_archive_icon_%28Wikiproject_icons%29.svg.png" width='50' height='50'></b> </th>
+    <th scope="col"><b  ><img  id='reading' src="https://static.thenounproject.com/png/250362-200.png" width='50' height='50'></b> </th>
   `;
-  const repli = document.querySelector('#reply');
-  repli.addEventListener('click', () =>{
-  if(email.sender === email.recipients){
-    repli.remove();
-  }
-  else{
-    reply(email.id)
-  }
+
+  document.getElementById('reading').addEventListener("click",() => {
+    fetch('/emails/'+email.id, {
+      method: 'PUT',
+      body: JSON.stringify({
+        read:true 
+      })
+    }).then(()=>load_mailbox(''))
+    
   })
+  const repli = document.querySelector('#reply');
+  fetch("user")
+  .then(response => response.json())
+  .then(user =>{
+    if( email.sender === user.user)
+     repli.style.display='none';
+  })
+  document.getElementById('done').addEventListener("click",() => {
+    archive_email(email)
+  })
+  repli.addEventListener('click',() => reply(email.id));
+
+
+
   
 
   })
@@ -118,5 +139,20 @@ function reply(id){
   .catch(error => {
     console.log(error)
   });
+
+}
+
+
+function archive_email(email){
+ 
+    fetch('/emails/'+email.id, {
+      method: 'PUT',
+      body: JSON.stringify({
+          archived: email.archived? false :true
+      })
+    }).then(()=>load_mailbox('inbox'))
+    
+  
+
 
 }
